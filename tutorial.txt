@@ -1,0 +1,245 @@
+In this tutorial, I'll try to introduce you what a Kata is in development world and how facing code kata can be helpfull. Then we'll move forward by preparing our environment by adding required packages usefull for our first Kata. we'll wall through composer to install phpspec and gulp for automatically run our tests. And finally we'll dig further by solving a kata named "String Calculator"
+
+
+Step One : What is a kata
+
+Kata belong to traditional japanese arts and commonly known by martial arts actors. they are some sort of exercices you repeat many and many time to hone your skills through practice and repetition. In programming, kata (code Kata) have pratically the same purpose, improve your skill by doing small problems over and over trying to improve your code at each iteration.
+
+	Why fall into code kata
+Well, now that we've learned what kata are, wouldn't be greate to see why should we use them?
+
+Remember, in kata we repaeat an exercice many and many but the key is to imporve your code each time. So its helps you to have elegant code and improve your workflow :). They are a lot of good things we can say about kata but in this tutorial we're gonna focus on solving String Calculator using TDD.
+
+Step two : Set up our environment
+
+Before jump into the code, we need to prep our world !
+
+Kata 1 : String calculator
+
+In this kata, we'll create a class with a add method that takes a string and finds the sum of all integer inside the string. And we'll walk trough TDD philosophy, whioch is : Test,  Implement the simplest code that pass the code and Refactor and finally run the test again to make sure we didn't break anything during refactoring.
+
+Let's gettting Started !
+
+
+Install phpspec:
+
+phpspec a test framework for php users. In this tutorial and for many coming, we'll use that awesome tool for running our tests. If want learn more about phpspec, see their documentation or if you want me to write a dedicated tutorial please leave a comment. so Let's intall it.
+
+Create a new folder and jump in and let play with composer.
+The phpspec official package name is phpspec/phpspec
+Well, let's require it in our project.
+composer require phpspec/phpspec
+composer will ask you to enter the version of the package.
+Type enter if you want the latest version.
+Then edit your composer.json file and just after your require block, add this :
+"autoload": {"psr-0": {"": "src"}}
+
+This this automatically load your class in src folder.
+
+Our first test:
+
+We create a spec for our class StringCalculator by running this command
+
+./vendor/bin/phpspec describe StringCalculator
+
+PS : if you find that command too long, you can add an alias
+alias phpspec="./vendor/bin/phpspec"
+and then execute:
+phpspec describe StringCalculator
+
+you notice 2 folders in your project src for your classes and another spec for your running tests.
+
+if you open spec/StringCalculatorSpec.php you'll see your first test.
+
+function it_is_initializable()
+    {
+        $this->shouldHaveType('StringCalculator');
+    }
+Let's try to run it.
+phpspec run
+
+The test will fail and phpspec ask you create your class StringCalculator in src folder.
+
+	1. Zero for empty text
+
+Our first challenge is to create a method Add which take an empty string and return 0.
+In order to implement that code we first need to write the test.
+So go ahead, and write your first test in the StringCalculatorSpec.php
+
+Note : when you write your function, please make sure to be as explicit as you can because your test is going to be your documentation for someone who will read your code.
+
+function it_returns_zero_for_an_empty_string()
+    {
+    	$this->add("")->shouldBe(0);
+    }
+So Am excepting to receive a 0 when i enter an empty string.
+Let' run phpspec and see what happen.
+    phpspec run
+
+The test fail because we don't have our method Add yet so phpspec offers to add that for us. 
+If you run phpspec again but we won't have any errors but the stest wil still fail. Why?
+
+Well though we've (phpspec did for us) the est is expecting 0 but got null. So let fix it.
+
+Remember you write the simplest code to make the test pass and then you refactor. So am gonna return 0 in my function.
+
+    public function add($number)
+    {
+
+        return 0;
+    }
+
+ Run it and see the green color. That's all!
+What next?
+
+Our next step is to return return int value of the number passed. So simple :) !
+
+function it_translates_a_string_to_int()
+	{
+		$this->add("1")->shouldBe(1);
+	}
+
+Now run it, it fails and then jump into the StringCalculator and make it pass.
+Update the method by adding a simple code.
+public function add($number)
+    {
+    	if(empty($number))
+    	{
+    		return 0;
+    	}
+        return intval($number);
+    }
+Let's try it.
+phpspec run
+
+It pass, great! Its now time to refactor a bit.
+We check if string is empty and then return 0 otherwise we return the param converted to int.
+public function add($number)
+    {
+    	return (int) $number;
+    }
+It's much better now, isn't ?
+instead of using a condition, we cast the param into int and return it. When we cast an empty string to int, it return 0.
+
+Now let do something a bit complex. We want the method to take an amount of numbers delimited by comma and find the sum. So let's write our test.
+
+function it_finds_the_sum_of_an_amount_of_numbers()
+    {
+    	$this->add("1,2")->shouldBe(3);
+    }
+The test failed so we can now write the code.
+
+public function add($numbers)
+{
+	$pieces = explode(",", $numbers);
+	$total = 0;
+	foreach($pieces as $piece)
+	{
+		$total += (int) $piece;
+	}
+
+	return $total;
+}
+
+Run the test and we got it!
+Is this refactorable (:()? always.
+Let's try
+public function add($numbers)
+{
+	$pieces = explode(",", $numbers);
+	return array_sum($pieces);
+}
+Done!.
+
+What if you want the comma to be the default delimiter and give users ability to change it to the new line (\n) character.
+
+The test will be :
+
+function it_accept_new_line_character_as_delimiter()
+{
+	$this->add("3\n3")->shouldBe(6);
+}
+
+We run, it fails so once again we jump in code.
+public function add($numbers)
+{
+	$pieces = preg_split("[,|\\n]", $numbers);
+	return array_sum($pieces);
+}
+Preg_split will explode the subject by the given pattern.
+That's All!
+
+Now we want to give users the ability to add a custom delimiter at the entry.
+So a user want to add a custon delimiter, he will have to prefix the string passed to the add muthod with : "//[custom_delimiter]\n[numbers]".
+An example will by like this : add("//;\n1;4;6") => 11
+Let write the test then!
+
+function it_accept_custom_delimiter()
+{
+	$this->add("//;\n1;4;6")->shouldBe(11);
+}
+
+It fails again allowing us to write the code that match the test.
+public function add($numbers)
+{
+	$delimiter = "[,|\\n";
+	$found = preg_match(^//(?P<delimiter>.)\\n", $numbers, $matches);
+	if ($found)
+	{
+		$delimiter = "|".$matches["custom"]."]";
+	}
+	$pieces = preg_split($delimiter, $numbers);
+	return array_sum($pieces);
+}
+
+We run the test again and the green color comes again!
+
+One last thing would be disollowing negative numbers. We check if the user passed any negative number and if he did, we throw an exception and notify him by a message showing him all invalid numbers. we that in mind, let's try it.
+
+Our test will be :
+function it_disallows_negative_numbers()
+{
+	$this->shouldThrow(new \InvalidArgumentException("The negative numbers are not allowed : -1,-2,-5"))->during("add",["-1,3,4,-2,9,-5"]);
+}
+
+Since it failed, we'll implement the code.
+public function add($numbers)
+{
+	$delimiter = "[,|\\n";
+	$negatives = [];
+	$found = preg_match(^//(?P<delimiter>.)\\n", $numbers, $matches);
+	if ($found)
+	{
+		$delimiter = "|".$matches["custom"]."]";
+	}
+	$pieces = preg_split($delimiter, $numbers);
+	$total = 0;
+	foreach($pieces as $piece)
+	{
+		if($piece < 0)
+		{
+			$negatives[] = $piece;
+			continue;
+		}
+		$total += $piece;
+	}
+	if (!empty($negatives)) {
+    	throw new \InvalidArgumentException("The negative numbers are not allowed : ". implode(",", $negatives));
+    }
+	return $total;
+}
+
+And We are done here!
+
+There many possibilities you can test, by example we can allow any length of delimiter, we can add multiple delimiters or something else. Your imagination is your limit!
+
+At this point our classes should look like this :
+string-calculator/spec/StringCalculatorSpec.php
+string-calculator/src/StringCalculator.php
+
+Don't forget, when you'll repeat this use another approach and always implement the simplest code that pass the test. Hope this have been instructive for you and I'ld like to thank you for viewing.
+
+
+
+
+

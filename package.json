@@ -1,0 +1,17 @@
+{
+  "name": "string-calculator",
+  "version": "1.0.0",
+  "description": "Watcher for phpspec tests",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Youssouf CHERIF",
+  "license": "ISC",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-notify": "^2.2.0",
+    "gulp-phpspec": "^0.5.4",
+    "lodash": "^4.6.1"
+  }
+}
